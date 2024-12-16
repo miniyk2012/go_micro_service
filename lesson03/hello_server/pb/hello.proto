@@ -1,0 +1,17 @@
+syntax = "proto3";  // 版本声明
+
+option go_package = "hello_server/pb";  // 项目中import导入生成的Go代码的名称
+
+package pb;  // proto文件模块
+
+service Greeter {
+    rpc Hello(HelloRequest) returns (HelloResponse);
+}
+
+message HelloRequest {
+    string name = 1;
+}
+
+message HelloResponse {
+    string reply = 1;
+}
