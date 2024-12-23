@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = "hello_server/pb"; // 项目中import导入生成的Go代码的名称
+
+package pb; // proto文件模块
+
+message AddRequest {
+  int32 a = 1;
+  int32 b = 2;
+}
+
+message AddResponse {
+  int32 result = 1;
+  uint32 code = 2;
+  string msg = 3;
+}
+
+service AddService { rpc Add(AddRequest) returns (AddResponse); }

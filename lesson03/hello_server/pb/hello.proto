@@ -4,12 +4,16 @@ option go_package = "hello_server/pb";  // 项目中import导入生成的Go代�
 
 package pb;  // proto文件模块
 
+import "google/protobuf/timestamp.proto";
+
 service Greeter {
     rpc Hello(HelloRequest) returns (HelloResponse);
 }
 
 message HelloRequest {
     string name = 1;
+    google.protobuf.Timestamp DateOfBirth = 3;
+
 }
 
 message HelloResponse {
