@@ -42,3 +42,14 @@ message Result {
   repeated string snippets = 3;
   Week week = 4;
 }
+
+message SampleMessage {
+  oneof test_oneof {
+    string name = 4;
+    SubMessage sub_message = 9;
+  }
+
+  message SubMessage {
+    int32 age = 1;
+  }
+}

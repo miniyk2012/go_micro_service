@@ -348,6 +348,134 @@ func (x *Result) GetWeek() Week {
 	return Week_UNKNOWN
 }
 
+type SampleMessage struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Types that are assignable to TestOneof:
+	//
+	//	*SampleMessage_Name
+	//	*SampleMessage_SubMessage_
+	TestOneof isSampleMessage_TestOneof `protobuf_oneof:"test_oneof"`
+}
+
+func (x *SampleMessage) Reset() {
+	*x = SampleMessage{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pb_demo_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SampleMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SampleMessage) ProtoMessage() {}
+
+func (x *SampleMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_demo_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SampleMessage.ProtoReflect.Descriptor instead.
+func (*SampleMessage) Descriptor() ([]byte, []int) {
+	return file_pb_demo_proto_rawDescGZIP(), []int{3}
+}
+
+func (m *SampleMessage) GetTestOneof() isSampleMessage_TestOneof {
+	if m != nil {
+		return m.TestOneof
+	}
+	return nil
+}
+
+func (x *SampleMessage) GetName() string {
+	if x, ok := x.GetTestOneof().(*SampleMessage_Name); ok {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *SampleMessage) GetSubMessage() *SampleMessage_SubMessage {
+	if x, ok := x.GetTestOneof().(*SampleMessage_SubMessage_); ok {
+		return x.SubMessage
+	}
+	return nil
+}
+
+type isSampleMessage_TestOneof interface {
+	isSampleMessage_TestOneof()
+}
+
+type SampleMessage_Name struct {
+	Name string `protobuf:"bytes,4,opt,name=name,proto3,oneof"`
+}
+
+type SampleMessage_SubMessage_ struct {
+	SubMessage *SampleMessage_SubMessage `protobuf:"bytes,9,opt,name=sub_message,json=subMessage,proto3,oneof"`
+}
+
+func (*SampleMessage_Name) isSampleMessage_TestOneof() {}
+
+func (*SampleMessage_SubMessage_) isSampleMessage_TestOneof() {}
+
+type SampleMessage_SubMessage struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Age int32 `protobuf:"varint,1,opt,name=age,proto3" json:"age,omitempty"`
+}
+
+func (x *SampleMessage_SubMessage) Reset() {
+	*x = SampleMessage_SubMessage{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pb_demo_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SampleMessage_SubMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SampleMessage_SubMessage) ProtoMessage() {}
+
+func (x *SampleMessage_SubMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_demo_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SampleMessage_SubMessage.ProtoReflect.Descriptor instead.
+func (*SampleMessage_SubMessage) Descriptor() ([]byte, []int) {
+	return file_pb_demo_proto_rawDescGZIP(), []int{3, 0}
+}
+
+func (x *SampleMessage_SubMessage) GetAge() int32 {
+	if x != nil {
+		return x.Age
+	}
+	return 0
+}
+
 var File_pb_demo_proto protoreflect.FileDescriptor
 
 var file_pb_demo_proto_rawDesc = []byte{
@@ -390,11 +518,21 @@ var file_pb_demo_proto_rawDesc = []byte{
 	0x65, 0x12, 0x1a, 0x0a, 0x08, 0x73, 0x6e, 0x69, 0x70, 0x70, 0x65, 0x74, 0x73, 0x18, 0x03, 0x20,
 	0x03, 0x28, 0x09, 0x52, 0x08, 0x73, 0x6e, 0x69, 0x70, 0x70, 0x65, 0x74, 0x73, 0x12, 0x1c, 0x0a,
 	0x04, 0x77, 0x65, 0x65, 0x6b, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x08, 0x2e, 0x70, 0x62,
-	0x2e, 0x57, 0x65, 0x65, 0x6b, 0x52, 0x04, 0x77, 0x65, 0x65, 0x6b, 0x2a, 0x1f, 0x0a, 0x04, 0x57,
-	0x65, 0x65, 0x6b, 0x12, 0x0b, 0x0a, 0x07, 0x55, 0x4e, 0x4b, 0x4e, 0x4f, 0x57, 0x4e, 0x10, 0x00,
-	0x12, 0x0a, 0x0a, 0x06, 0x4d, 0x4f, 0x4e, 0x44, 0x41, 0x59, 0x10, 0x01, 0x42, 0x14, 0x5a, 0x12,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x76, 0x33, 0x5f, 0x64, 0x65, 0x6d, 0x6f, 0x2f,
-	0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x2e, 0x57, 0x65, 0x65, 0x6b, 0x52, 0x04, 0x77, 0x65, 0x65, 0x6b, 0x22, 0x94, 0x01, 0x0a, 0x0d,
+	0x53, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x14, 0x0a,
+	0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x04, 0x6e,
+	0x61, 0x6d, 0x65, 0x12, 0x3f, 0x0a, 0x0b, 0x73, 0x75, 0x62, 0x5f, 0x6d, 0x65, 0x73, 0x73, 0x61,
+	0x67, 0x65, 0x18, 0x09, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x70, 0x62, 0x2e, 0x53, 0x61,
+	0x6d, 0x70, 0x6c, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x53, 0x75, 0x62, 0x4d,
+	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x48, 0x00, 0x52, 0x0a, 0x73, 0x75, 0x62, 0x4d, 0x65, 0x73,
+	0x73, 0x61, 0x67, 0x65, 0x1a, 0x1e, 0x0a, 0x0a, 0x53, 0x75, 0x62, 0x4d, 0x65, 0x73, 0x73, 0x61,
+	0x67, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x61, 0x67, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52,
+	0x03, 0x61, 0x67, 0x65, 0x42, 0x0c, 0x0a, 0x0a, 0x74, 0x65, 0x73, 0x74, 0x5f, 0x6f, 0x6e, 0x65,
+	0x6f, 0x66, 0x2a, 0x1f, 0x0a, 0x04, 0x57, 0x65, 0x65, 0x6b, 0x12, 0x0b, 0x0a, 0x07, 0x55, 0x4e,
+	0x4b, 0x4e, 0x4f, 0x57, 0x4e, 0x10, 0x00, 0x12, 0x0a, 0x0a, 0x06, 0x4d, 0x4f, 0x4e, 0x44, 0x41,
+	0x59, 0x10, 0x01, 0x42, 0x14, 0x5a, 0x12, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x76,
+	0x33, 0x5f, 0x64, 0x65, 0x6d, 0x6f, 0x2f, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x33,
 }
 
 var (
@@ -410,26 +548,29 @@ func file_pb_demo_proto_rawDescGZIP() []byte {
 }
 
 var file_pb_demo_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_pb_demo_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_pb_demo_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_pb_demo_proto_goTypes = []interface{}{
-	(Week)(0),                 // 0: pb.Week
-	(SearchRequest_Corpus)(0), // 1: pb.SearchRequest.Corpus
-	(*SearchRequest)(nil),     // 2: pb.SearchRequest
-	(*SearchResponse)(nil),    // 3: pb.SearchResponse
-	(*Result)(nil),            // 4: pb.Result
-	nil,                       // 5: pb.SearchResponse.MapFieldEntry
+	(Week)(0),                        // 0: pb.Week
+	(SearchRequest_Corpus)(0),        // 1: pb.SearchRequest.Corpus
+	(*SearchRequest)(nil),            // 2: pb.SearchRequest
+	(*SearchResponse)(nil),           // 3: pb.SearchResponse
+	(*Result)(nil),                   // 4: pb.Result
+	(*SampleMessage)(nil),            // 5: pb.SampleMessage
+	nil,                              // 6: pb.SearchResponse.MapFieldEntry
+	(*SampleMessage_SubMessage)(nil), // 7: pb.SampleMessage.SubMessage
 }
 var file_pb_demo_proto_depIdxs = []int32{
 	1, // 0: pb.SearchRequest.corpus:type_name -> pb.SearchRequest.Corpus
 	1, // 1: pb.SearchResponse.corpus:type_name -> pb.SearchRequest.Corpus
 	4, // 2: pb.SearchResponse.result:type_name -> pb.Result
-	5, // 3: pb.SearchResponse.map_field:type_name -> pb.SearchResponse.MapFieldEntry
+	6, // 3: pb.SearchResponse.map_field:type_name -> pb.SearchResponse.MapFieldEntry
 	0, // 4: pb.Result.week:type_name -> pb.Week
-	5, // [5:5] is the sub-list for method output_type
-	5, // [5:5] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	7, // 5: pb.SampleMessage.sub_message:type_name -> pb.SampleMessage.SubMessage
+	6, // [6:6] is the sub-list for method output_type
+	6, // [6:6] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_pb_demo_proto_init() }
@@ -474,6 +615,34 @@ func file_pb_demo_proto_init() {
 				return nil
 			}
 		}
+		file_pb_demo_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SampleMessage); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pb_demo_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SampleMessage_SubMessage); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+	}
+	file_pb_demo_proto_msgTypes[3].OneofWrappers = []interface{}{
+		(*SampleMessage_Name)(nil),
+		(*SampleMessage_SubMessage_)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -481,7 +650,7 @@ func file_pb_demo_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_pb_demo_proto_rawDesc,
 			NumEnums:      2,
-			NumMessages:   4,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
