@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "google/protobuf/any.proto";
+
 package pb; // 定义了一个proto的命名空间
 
 option go_package = "protobufv3_demo/pb";
@@ -33,7 +35,8 @@ message SearchResponse {
   repeated string ret = 1; // ret = ["a", "b", "c"]
   SearchRequest.Corpus corpus = 2;
   Result result = 3;
-  map<string, int32> map_field = 4; // map
+  map<string, int32> map_field = 4;         // map
+  repeated google.protobuf.Any details = 5; // any
 }
 
 message Result {
@@ -49,7 +52,7 @@ message SampleMessage {
     SubMessage sub_message = 9;
   }
 
-  message SubMessage {
-    int32 age = 1;
-  }
+  message SubMessage { int32 age = 1; }
 }
+
+service SearchService { rpc Search(SearchRequest) returns (SearchResponse); }

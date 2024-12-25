@@ -19,6 +19,6 @@ pb/*.proto
 
 ## python client
 ```python
-## --pyi_out=.是生成stub来自动提示的, 这是因为python的pb是动态生成的代码, 不能直接引用, 因此需要stub
+## --pyi_out=.是生成stub来自动提示的, 这是因为python的pb是运行时动态获取, 不能直接引用, 因此需要stub
 python -m grpc_tools.protoc -Ipb --python_out=. --pyi_out=. --grpc_python_out=. pb/add.proto 
 ```
