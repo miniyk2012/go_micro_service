@@ -31,7 +31,7 @@ func basicDemo() {
 		return
 	}
 	fmt.Println(string(jsonBytes))
-	
+
 	dateOfBirth := searchRequest.GetDateOfBirth().AsTime()
 	loc, _ := time.LoadLocation("Asia/Shanghai")  // UTC+8 timezone
 	utc8Time := dateOfBirth.In(loc)
@@ -80,7 +80,7 @@ func anyDemo() {
 }
 
 func main() {
-	// oneOfDemo()
-	// anyDemo()
+	oneOfDemo()
+	anyDemo()
 	basicDemo()
 }
