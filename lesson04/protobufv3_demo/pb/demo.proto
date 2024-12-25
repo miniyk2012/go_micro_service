@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "google/protobuf/any.proto";
+import "google/protobuf/timestamp.proto";
 
 package pb; // 定义了一个proto的命名空间
 
@@ -23,6 +24,7 @@ message SearchRequest {
     VIDEO = 6; // 枚举值
   }
   Corpus corpus = 6; // 字段编号
+  google.protobuf.Timestamp DateOfBirth = 7;
 }
 
 enum Week {

@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"protobufv3_demo/pb"
 
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func oneOfDemo() {
@@ -21,7 +23,7 @@ func oneOfDemo() {
 }
 
 func basicDemo() {
-	searchRequest := pb.SearchRequest{Query: "hello world", Corpus: pb.SearchRequest_LOCAL}
+	searchRequest := pb.SearchRequest{Query: "hello world", Corpus: pb.SearchRequest_LOCAL, DateOfBirth: timestamppb.New(time.Now())}
 	searchRequest.Corpus = pb.SearchRequest_NEWS
 	jsonBytes, err := protojson.Marshal(&searchRequest)
 	if err != nil {
@@ -29,6 +31,11 @@ func basicDemo() {
 		return
 	}
 	fmt.Println(string(jsonBytes))
+	
+	dateOfBirth := searchRequest.GetDateOfBirth().AsTime()
+	loc, _ := time.LoadLocation("Asia/Shanghai")  // UTC+8 timezone
+	utc8Time := dateOfBirth.In(loc)
+	fmt.Println(utc8Time.Format("2006-01-02 15:04:05"))
 }
 
 func anyDemo() {
@@ -74,5 +81,6 @@ func anyDemo() {
 
 func main() {
 	// oneOfDemo()
-	anyDemo()
+	// anyDemo()
+	basicDemo()
 }
