@@ -4,4 +4,18 @@ package book;
 
 option go_package = "demo/proto/book";
 
-message Book { string name = 1; }
+import "book/price.proto"; // 从--proto_path指定的目录中导入
+import "author/author.proto";
+import "google/protobuf/timestamp.proto";
+
+message Book {
+  string name = 1;
+  Price price = 2;
+
+  // 导入其他目录下的message
+  author.Info author = 3;
+  // 时间戳？
+  google.protobuf.Timestamp date = 4;
+}
+
+service BookService { rpc CreateBook(Book) returns (Book); }
