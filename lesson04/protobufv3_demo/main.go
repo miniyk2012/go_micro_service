@@ -7,6 +7,7 @@ import (
 	"protobufv3_demo/pb"
 
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -16,7 +17,6 @@ func oneOfDemo() {
 	sampleMessage := &pb.SampleMessage{}
 	sampleMessage.TestOneof = &pb.SampleMessage_Name{Name: "hello world"}
 	fmt.Println(sampleMessage.GetName(), sampleMessage.GetTestOneof())
-
 
 	sampleMessage.TestOneof = &pb.SampleMessage_SubMessage_{SubMessage: &pb.SampleMessage_SubMessage{Age: 12}}
 	fmt.Println(sampleMessage.GetSubMessage(), sampleMessage.GetTestOneof())
@@ -30,10 +30,12 @@ func basicDemo() {
 		fmt.Println("error:", err)
 		return
 	}
-	fmt.Println(string(jsonBytes))
+	fmt.Printf("json format: %s\n", jsonBytes)
+	reqRespBytes, err := proto.Marshal(&searchRequest)
+	fmt.Printf("bytes: %v\n", reqRespBytes)
 
 	dateOfBirth := searchRequest.GetDateOfBirth().AsTime()
-	loc, _ := time.LoadLocation("Asia/Shanghai")  // UTC+8 timezone
+	loc, _ := time.LoadLocation("Asia/Shanghai") // UTC+8 timezone
 	utc8Time := dateOfBirth.In(loc)
 	fmt.Println(utc8Time.Format("2006-01-02 15:04:05"))
 }
@@ -41,10 +43,10 @@ func basicDemo() {
 func anyDemo() {
 	// Create a Result message
 	result := &pb.Result{
-		Url: "https://example.com",
-		Title: "Example Page",
+		Url:      "https://example.com",
+		Title:    "Example Page",
 		Snippets: []string{"snippet1", "snippet2"},
-		Week: pb.Week_MONDAY,
+		Week:     pb.Week_MONDAY,
 	}
 
 	// Pack the Result message into an Any
@@ -80,7 +82,7 @@ func anyDemo() {
 }
 
 func main() {
-	oneOfDemo()
-	anyDemo()
+	//oneOfDemo()
+	//anyDemo()
 	basicDemo()
 }
