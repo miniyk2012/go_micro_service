@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+option go_package = "demo/proto/sniff";
+
+message InstanceInfo {
+  //ip
+  string host = 1;
+  //端口
+  int32 port = 2;
+  //集群
+  string cluster = 3;
+  //机房
+  string idc = 4;
+  //psm
+  string psm = 5;
+}
+
+message ReqResp {
+  string id = 1;
+  //Thrift Http1
+  string proto = 2;
+  //请求源
+  InstanceInfo from = 3;
+  //请求目标
+  InstanceInfo to = 4;
+  //Thrift request logid
+  string logid = 5;
+  //request原始字节流
+  bytes request = 6;
+  //response原始字节流
+  bytes response = 7;
+  //压测标记
+  string stress_tag = 8;
+  string ddp_tag = 9;
+  string ring_hash_key = 10;
+  //方法名
+  string method = 11;
+  //时间戳
+  int64 timestamp = 12;
+  //状态码
+  int32 status_code = 13;
+  //额外meta信息
+  map<string, string> meta = 14;
+  //源env
+  string from_env = 15;
+  //目标env
+  string to_env = 16;
+  map<string, string> request_meta = 17;
+  map<string, string> response_meta = 18;
+  string request_hash = 19;
+  int64 packetbus_id = 20;
+  bool is_egress = 21;
+  //sniffer config id
+  int64 config_id = 255;
+  //packetbus task id
+  int64 task_id = 256;
+}
