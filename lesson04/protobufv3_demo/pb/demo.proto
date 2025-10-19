@@ -5,7 +5,7 @@ import "google/protobuf/timestamp.proto";
 
 package pb; // 定义了一个proto的命名空间
 
-option go_package = "protobufv3_demo/pb";
+option go_package = "protobufv3_demo/pb";  // 项目中import导入生成的Go代码的路径
 
 message SearchRequest {
   string query = 1; // singular 可以设置值也可以不设置值

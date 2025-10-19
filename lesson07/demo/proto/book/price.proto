@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package book; // 声明的是prototbuf的包
+package book; // 声明的是protobuf的包, 建议用当前目录的名字
 
 option go_package = "demo/proto/book"; // 声明的是go的包
 

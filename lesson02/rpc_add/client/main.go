@@ -37,6 +37,6 @@ func main() {
 	var reply2 int
 	divCall := client.Go("ServiceA.Add", args, &reply2, nil)
 	replyCall := <-divCall.Done // 接收调用结果
-	fmt.Println(replyCall.Error)
+	fmt.Printf("error=%v\n", replyCall.Error)
 	fmt.Println(reply2)
 }
