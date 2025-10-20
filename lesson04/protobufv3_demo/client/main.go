@@ -18,7 +18,7 @@ const (
 
 var (
 	addr  = flag.String("addr", "localhost:50051", "the address to connect to")
-	query = flag.String("name", defaultQuery, "Query to search")
+	query = flag.String("query", defaultQuery, "Query to search")
 )
 
 func main() {

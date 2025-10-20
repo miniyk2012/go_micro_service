@@ -83,6 +83,6 @@ func anyDemo() {
 
 func main() {
 	//oneOfDemo()
-	//anyDemo()
-	basicDemo()
+	anyDemo()
+	//basicDemo()
 }
