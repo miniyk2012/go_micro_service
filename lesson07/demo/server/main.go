@@ -15,6 +15,10 @@ import (
 	anypb "google.golang.org/protobuf/types/known/anypb"
 )
 
+const (
+	TypeUrl = "type.googleapis.com/"
+)
+
 var (
 	port = flag.Int("port", 50051, "The server port")
 )
@@ -29,17 +33,24 @@ func (*calculateServer) Add(_ context.Context, req *calculate.CalculateRequest) 
 		student *calculate.Student = new(calculate.Student)
 		user    *calculate.User    = new(calculate.User)
 		data    *anypb.Any         = req.Data
+		err     error
 	)
 	log.Printf("data: %s", data)
-	err := anypb.UnmarshalTo(data, student, proto.UnmarshalOptions{})
-	if err != nil {
+	log.Printf("data.TypeUrl: %s", data.TypeUrl)
+	if data.TypeUrl == TypeUrl+"calculate.User" {
 		err = anypb.UnmarshalTo(data, user, proto.UnmarshalOptions{})
 		if err != nil {
-			log.Printf("cannot unmarshal to Student or User")
+			log.Printf("cannot unmarshal to User")
 		}
 		log.Printf("user = %s", protojson.Format(user))
-	} else {
+	} else if data.TypeUrl == TypeUrl+"calculate.Student" {
+		err = anypb.UnmarshalTo(data, student, proto.UnmarshalOptions{})
+		if err != nil {
+			log.Printf("cannot unmarshal to Student")
+		}
 		log.Printf("student = %s", protojson.Format(student))
+	} else {
+		log.Printf("unknown data type: %s", data.TypeUrl)
 	}
 	return &calculate.CalculateResponse{Result: req.A + req.B}, nil
 }

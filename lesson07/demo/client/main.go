@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -61,4 +62,7 @@ func calculateDemo(conn *grpc.ClientConn) {
 		log.Fatalf("could not calculate: %v", err)
 	}
 	log.Printf("10 + 20 = %f", r.Result)
+
+	log.Printf("req.MessageName=%s", proto.MessageName(req)) // calculate.CalculateRequest
+
 }
