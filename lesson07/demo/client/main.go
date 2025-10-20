@@ -4,6 +4,7 @@ import (
 	"context"
 	"demo/proto/author"
 	"demo/proto/book"
+	"demo/proto/calculate"
 	"flag"
 	"log"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -38,4 +40,25 @@ func main() {
 		log.Fatalf("could not greet: %v", err)
 	}
 	log.Printf("create one book: %s", protojson.Format(r))
+
+	calculateDemo(conn)
+}
+
+func calculateDemo(conn *grpc.ClientConn) {
+	c := calculate.NewCalculatorClient(conn)
+	var v int64 = 0
+	_ = v
+	req := &calculate.CalculateRequest{A: 10, B: 20, C: nil}
+	req.Data, _ = anypb.New(&calculate.Student{Age: 1001, Name: "zhangsan"})
+	r, err := c.Add(context.Background(), req)
+	if err != nil {
+		log.Fatalf("could not calculate: %v", err)
+	}
+	log.Printf("10 + 20 = %f", r.Result)
+	req.Data, _ = anypb.New(&calculate.User{Age: 36, Username: "yangkia"})
+	r, err = c.Add(context.Background(), req)
+	if err != nil {
+		log.Fatalf("could not calculate: %v", err)
+	}
+	log.Printf("10 + 20 = %f", r.Result)
 }
