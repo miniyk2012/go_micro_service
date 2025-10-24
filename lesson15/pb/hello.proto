@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "lesson15/pb";
+
+
+message HelloRequest {
+  string msg = 1;
+}
+
+message HelloResponse {
+  string msg = 1;
+}
+
+service GreetingService {
+  rpc SayMultiple(stream HelloRequest) returns (HelloResponse);
+  rpc RevMultiple(HelloRequest) returns (stream HelloResponse);
+  rpc Chat(stream HelloRequest) returns (stream HelloResponse);
+}

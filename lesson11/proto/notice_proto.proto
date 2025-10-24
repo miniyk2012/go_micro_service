@@ -2,7 +2,10 @@ syntax = "proto3";
 
 package proto;
 
-option go_package="lesson08/proto";
+option go_package = "lesson11/proto";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/field_mask.proto";
 
 message NoticeReaderRequest {
   string msg = 1;
@@ -10,4 +13,27 @@ message NoticeReaderRequest {
     string email = 2;
     string phone = 3;
   }
+}
+
+message Book {
+  string title = 1;
+  string author = 5;
+  optional int64 price1 = 2;
+  google.protobuf.Int64Value price2 = 3;
+  int64 price3 = 4;
+  message Info {
+    string a = 1;
+    string b = 2;
+  }
+  Info info = 6;
+}
+
+message UpdateBookRequest {
+  // 操作人
+  string op = 1;
+  // 要更新的书籍信息
+  Book book = 2;
+  // 要更新的字段
+  google.protobuf.FieldMask update_mask = 3;
+
 }
