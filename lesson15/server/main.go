@@ -15,6 +15,7 @@ type routeGuideServer struct {
 	pb.UnimplementedGreetingServiceServer
 }
 
+// SayMultiple 客户端流式
 func (*routeGuideServer) SayMultiple(stream grpc.ClientStreamingServer[pb.HelloRequest, pb.HelloResponse]) error {
 	reply := "你好："
 	for {
@@ -31,6 +32,8 @@ func (*routeGuideServer) SayMultiple(stream grpc.ClientStreamingServer[pb.HelloR
 		reply += req.GetMsg() + ", "
 	}
 }
+
+// RevMultiple 服务端流式
 func (*routeGuideServer) RevMultiple(req *pb.HelloRequest, stream grpc.ServerStreamingServer[pb.HelloResponse]) error {
 	words := []string{
 		"你好",
@@ -53,6 +56,7 @@ func (*routeGuideServer) Chat(stream grpc.BidiStreamingServer[pb.HelloRequest, p
 	for {
 		req, err := stream.Recv()
 		if err == io.EOF {
+			log.Println("stream.Recv EOF")
 			return nil
 		}
 		if err != nil {
