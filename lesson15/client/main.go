@@ -20,10 +20,11 @@ var (
 	serverAddr = flag.String("addr", "localhost:50051", "The server address in the format of host:port")
 )
 
+// 客户端流式
 func sayMultipleDemo(client pb.GreetingServiceClient) {
 
 	var names = []string{"gopher", "golang", "grpc"}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	stream, err := client.SayMultiple(ctx)
 	if err != nil {
@@ -31,7 +32,7 @@ func sayMultipleDemo(client pb.GreetingServiceClient) {
 	}
 	for _, name := range names {
 		if err := stream.Send(&pb.HelloRequest{Msg: name}); err != nil {
-			log.Fatalf("client.SayMultiple failed: %v", err)
+			log.Fatalf("client.SayMultiple stream.Send(%v) failed: %v", name, err)
 		}
 	}
 	reply, err := stream.CloseAndRecv()
@@ -41,8 +42,9 @@ func sayMultipleDemo(client pb.GreetingServiceClient) {
 	log.Printf("SayMultiple Reply: %s", reply.Msg)
 }
 
+// 服务端流式
 func revMultipleDemo(client pb.GreetingServiceClient) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	stream, err := client.RevMultiple(ctx, &pb.HelloRequest{Msg: "hello"})
 	if err != nil {
@@ -54,12 +56,13 @@ func revMultipleDemo(client pb.GreetingServiceClient) {
 			break
 		}
 		if err != nil {
-			log.Fatalf("stream.Recv failed: %v", err)
+			log.Fatalf("stream.Recv stream.Recv() failed: %v", err)
 		}
 		log.Printf("RevMultiple Msg: %s", resp.Msg)
 	}
 }
 
+// 双向流式
 func chatDemo(client pb.GreetingServiceClient) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -73,6 +76,7 @@ func chatDemo(client pb.GreetingServiceClient) {
 			in, err := stream.Recv()
 			if err == io.EOF {
 				// read done.
+				log.Println("stream.Recv EOF")
 				close(waitc)
 				return
 			}
@@ -90,14 +94,16 @@ func chatDemo(client pb.GreetingServiceClient) {
 			continue
 		}
 		if cmd == "exit" {
+			log.Printf("exit break")
 			break
 		}
 		if err := stream.Send(&pb.HelloRequest{Msg: cmd}); err != nil {
 			log.Fatalf("client.Chat stream.Send(%v) failed: %v", cmd, err)
 		}
 	}
-	stream.CloseSend()
+	stream.CloseSend() // 这个一定要, 关闭发送, 这样服务端才能接收到EOF, 然后客户端才能收到EOF
 	<-waitc
+	time.Sleep(1 * time.Second)
 }
 
 func main() {
