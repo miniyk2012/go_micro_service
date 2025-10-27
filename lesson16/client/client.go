@@ -25,15 +25,18 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	rand "math/rand/v2"
+	"strconv"
 	"time"
 
 	pb "lesson16/routeguide"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 )
 
 var (
@@ -48,9 +51,45 @@ func printFeature(client pb.RouteGuideClient, point *pb.Point) {
 	log.Printf("Getting feature for point (%d, %d)", point.Latitude, point.Longitude)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	feature, err := client.GetFeature(ctx, point)
+	md := metadata.Pairs("token", "app-test",
+		"request_id", "123456",
+	)
+	// 基于metadata创建context.
+	ctx = metadata.NewOutgoingContext(ctx, md)
+	var header, trailer metadata.MD
+	feature, err := client.GetFeature(ctx, point,
+		grpc.Header(&header),
+		grpc.Trailer(&trailer),
+	)
 	if err != nil {
 		log.Fatalf("client.GetFeature failed: %v", err)
+	}
+	// 从header中取
+	if t, ok := header["location"]; ok {
+		fmt.Printf("location from header:\n")
+		for i, e := range t {
+			fmt.Printf(" %d. %s\n", i, e)
+		}
+	} else {
+		fmt.Printf("location expected but doesn't exist in header\n")
+	}
+	if t, ok := header["timestamp"]; ok {
+		fmt.Printf("timestamp from header:\n")
+		for i, e := range t {
+			fmt.Printf(" %d. %s\n", i, e)
+		}
+	} else {
+		log.Fatal("timestamp expected but doesn't exist in header")
+	}
+
+	// 从trailer中取timestamp
+	if t, ok := trailer["timestamp"]; ok {
+		fmt.Printf("timestamp from trailer:\n")
+		for i, e := range t {
+			fmt.Printf(" %d. %s\n", i, e)
+		}
+	} else {
+		fmt.Printf("timestamp expected but doesn't exist in trailer\n")
 	}
 	log.Println(feature)
 }
@@ -114,14 +153,29 @@ func runRouteChat(client pb.RouteGuideClient) {
 		{Location: &pb.Point{Latitude: 0, Longitude: 2}, Message: "Fifth message"},
 		{Location: &pb.Point{Latitude: 0, Longitude: 3}, Message: "Sixth message"},
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+	md := metadata.Pairs("timestamp", strconv.Itoa(int(time.Now().Unix())))
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+
 	stream, err := client.RouteChat(ctx)
 	if err != nil {
 		log.Fatalf("client.RouteChat failed: %v", err)
 	}
 	waitc := make(chan struct{})
 	go func() {
+		// Read the header when the header arrives.
+		header, err := stream.Header()
+		if err != nil {
+			log.Fatalf("failed to get header from stream: %v", err)
+		}
+		// Read metadata from server's header.
+		if t, ok := header["timestamp"]; ok {
+			fmt.Printf("timestamp from header:\n")
+			for i, e := range t {
+				fmt.Printf(" %d. %s\n", i, e)
+			}
+		} else {
+			log.Fatal("timestamp expected but doesn't exist in header")
+		}
 		for {
 			in, err := stream.Recv()
 			if err == io.EOF {
@@ -142,6 +196,19 @@ func runRouteChat(client pb.RouteGuideClient) {
 	}
 	stream.CloseSend()
 	<-waitc
+
+	// Read the trailer after the RPC is finished.
+	trailer := stream.Trailer()
+	// Read metadata from server's trailer.
+	if t, ok := trailer["timestamp"]; ok {
+		fmt.Printf("timestamp from trailer:\n")
+		for i, e := range t {
+			fmt.Printf(" %d. %s\n", i, e)
+		}
+	} else {
+		log.Fatal("timestamp expected but doesn't exist in trailer")
+	}
+
 }
 
 func randomPoint() *pb.Point {

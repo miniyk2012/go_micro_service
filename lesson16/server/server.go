@@ -31,10 +31,14 @@ import (
 	"log"
 	"math"
 	"net"
+	"strconv"
 	"sync"
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 
 	pb "lesson16/routeguide"
@@ -53,7 +57,27 @@ type routeGuideServer struct {
 }
 
 // GetFeature returns the feature at the given point.
-func (s *routeGuideServer) GetFeature(_ context.Context, point *pb.Point) (*pb.Feature, error) {
+func (s *routeGuideServer) GetFeature(ctx context.Context, point *pb.Point) (*pb.Feature, error) {
+	// 通过defer中设置trailer.
+	defer func() {
+		trailer := metadata.Pairs("timestamp", strconv.Itoa(int(time.Now().Unix())))
+		grpc.SetTrailer(ctx, trailer)
+	}()
+
+	// 从客户端请求上下文中读取metadata.
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, status.Errorf(codes.DataLoss, "GetFeature: failed to get metadata")
+	}
+	fmt.Printf("metadata from client: %v\n", md)
+	if t, ok := md["token"]; ok {
+		if len(t) < 1 || t[0] != "app-test" {
+			return nil, status.Error(codes.Unauthenticated, "认证失败")
+		}
+	}
+	// 创建和发送header.
+	header := metadata.New(map[string]string{"location": "BeiJing", "timestamp": strconv.Itoa(int(time.Now().Unix()))})
+	grpc.SendHeader(ctx, header)
 	for _, feature := range s.savedFeatures {
 		if proto.Equal(feature.Location, point) {
 			return feature, nil
@@ -114,6 +138,26 @@ func (s *routeGuideServer) RecordRoute(stream pb.RouteGuide_RecordRouteServer) e
 // RouteChat receives a stream of message/location pairs, and responds with a stream of all
 // previous messages at each of those locations.
 func (s *routeGuideServer) RouteChat(stream pb.RouteGuide_RouteChatServer) error {
+	// Create trailer in defer to record function return time.
+	defer func() {
+		trailer := metadata.Pairs("timestamp", strconv.Itoa(int(time.Now().Unix())))
+		stream.SetTrailer(trailer)
+	}()
+	// Read metadata from client.
+	md, ok := metadata.FromIncomingContext(stream.Context())
+	if !ok {
+		return status.Errorf(codes.DataLoss, "RouteChat: failed to get metadata")
+	}
+	if t, ok := md["timestamp"]; ok {
+		fmt.Printf("timestamp from metadata:\n")
+		for i, e := range t {
+			fmt.Printf(" %d. %s\n", i, e)
+		}
+	}
+
+	// Create and send header.
+	header := metadata.New(map[string]string{"location": "MTV", "timestamp": strconv.Itoa(int(time.Now().Unix()))})
+	stream.SendHeader(header)
 	for {
 		in, err := stream.Recv()
 		if err == io.EOF {
@@ -138,6 +182,7 @@ func (s *routeGuideServer) RouteChat(stream pb.RouteGuide_RouteChatServer) error
 				return err
 			}
 		}
+		time.Sleep(500 * time.Millisecond)
 	}
 }
 
