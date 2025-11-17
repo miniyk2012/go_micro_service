@@ -9,6 +9,7 @@ import (
 
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 
 	"google.golang.org/grpc"
@@ -42,6 +43,7 @@ func (s *server) SayHello(_ context.Context, in *proto.HelloRequest) (*proto.Hel
 		}
 		return nil, ds.Err()
 	}
+	fmt.Printf("name=%s\n", in.GetName())
 	reply := "hello " + in.GetName()
 	return &proto.HelloResponse{Reply: reply}, nil
 }
@@ -54,8 +56,11 @@ func main() {
 		return
 	}
 	s := grpc.NewServer() // 创建grpc服务
+
 	// 注册服务
 	proto.RegisterGreeterServer(s, &server{count: make(map[string]int)})
+	// 新增：注册反射 API（关键步骤）
+	reflection.Register(s) // 让服务支持反射
 	// 启动服务
 	err = s.Serve(l)
 	if err != nil {
