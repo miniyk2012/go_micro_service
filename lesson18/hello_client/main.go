@@ -8,16 +8,30 @@ import (
 	"time"
 
 	"code.xxx.com/backend/hello_client/proto"
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
+
 	// "google.golang.org/grpc/metadata"
 )
 
 // grpc 客户端
 // 调用server端的 SayHello 方法
 
-var name = flag.String("name", "七米", "通过-name告诉server你是谁")
+var name = flag.String("name", "miniyk", "通过-name告诉server你是谁")
+
+func handelError(err error) {
+	s := status.Convert(err)
+	for _, d := range s.Details() {
+		switch info := d.(type) {
+		case *errdetails.QuotaFailure:
+			fmt.Printf("Quota failure: %s\n", info)
+		default:
+			fmt.Printf("Unexpected type: %#v\n", info)
+		}
+	}
+}
 
 func main() {
 	flag.Parse() // 解析命令行参数
@@ -36,30 +50,16 @@ func main() {
 	defer cancel()
 
 	// 发起普通RPC调用
-	// 带元数据
-	md := metadata.Pairs(
-		"token", "app-test-q1mi",
-	)
-	ctx = metadata.NewOutgoingContext(ctx, md)
-	// 声明俩变量
-	var header, trailer metadata.MD
-	resp, err := c.SayHello(
-		ctx,
-		&proto.HelloRequest{Name: *name},
-		grpc.Header(&header),
-		grpc.Trailer(&trailer),
-	)
+	resp, err := c.SayHello(ctx, &proto.HelloRequest{Name: *name})
 	if err != nil {
-		log.Printf("c.SayHello failed, err:%v", err)
+		log.Printf("first c.SayHello failed, err:%v", err)
 		return
 	}
-	// 拿到响应数据之前可以获取header
-	fmt.Printf("header:%v\n", header)
-
 	// 拿到了RPC响应
 	log.Printf("resp:%v\n", resp.GetReply())
-
-	// 拿到响应数据后可以获取trailer
-	fmt.Printf("trailer:%#v\n", trailer)
-
+	resp, err = c.SayHello(ctx, &proto.HelloRequest{Name: *name})
+	if err == nil {
+		log.Fatal("c.SayHello twice should failed")
+	}
+	handelError(err)
 }

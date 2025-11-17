@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
 	"hello_server/proto"
 	"net"
-	"strconv"
-	"time"
+	"sync"
+
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"google.golang.org/grpc"
 )
@@ -18,39 +18,31 @@ import (
 
 type server struct {
 	proto.UnimplementedGreeterServer
+	mu    sync.Mutex
+	count map[string]int // 记录每个name的请求次数
 }
 
 // SayHello 是我们需要实现的方法
 // 这个方法是我们对外提供的服务
-func (s *server) SayHello(ctx context.Context, in *proto.HelloRequest) (*proto.HelloResponse, error) {
-	// 利用defer 在发送完响应数据后，发送trailer
-	defer func() {
-		trailer := metadata.Pairs(
-			"timestamp", strconv.Itoa(int(time.Now().Unix())),
-		)
-		grpc.SetTrailer(ctx, trailer)
-	}()
-	// 在执行业务逻辑之前要check metadata中是否包含token
-	md, ok := metadata.FromIncomingContext(ctx)
-	fmt.Printf("md:%#v ok:%#v\n", md, ok)
-	if !ok { // 没有元数据我拒接
-		return nil, status.Error(codes.Unauthenticated, "无效请求")
+func (s *server) SayHello(_ context.Context, in *proto.HelloRequest) (*proto.HelloResponse, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.count[in.GetName()]++
+	if s.count[in.GetName()] > 1 {
+		st := status.New(codes.ResourceExhausted, "Request limit exceeded.")
+		ds, err := st.WithDetails(
+			&errdetails.QuotaFailure{
+				Violations: []*errdetails.QuotaFailure_Violation{{
+					Subject:     fmt.Sprintf("name:%s", in.Name),
+					Description: "限制每个name调用一次",
+				}},
+			}, in)
+		if err != nil {
+			return nil, st.Err()
+		}
+		return nil, ds.Err()
 	}
-	vl := md.Get("token")
-	if len(vl) < 1 || vl[0] != "app-test-q1mi" {
-		return nil, status.Error(codes.Unauthenticated, "无效token")
-	}
-	//if vl, ok := md["token"]; ok {
-	//	if len(vl) > 0 && vl[0] == "app-test-q1mi" {
-	//		// 有效的请求
-	//	}
-	//}
 	reply := "hello " + in.GetName()
-	// 发送数据前发送header
-	header := metadata.New(map[string]string{
-		"location": "Beijing",
-	})
-	grpc.SendHeader(ctx, header)
 	return &proto.HelloResponse{Reply: reply}, nil
 }
 
@@ -63,7 +55,7 @@ func main() {
 	}
 	s := grpc.NewServer() // 创建grpc服务
 	// 注册服务
-	proto.RegisterGreeterServer(s, &server{})
+	proto.RegisterGreeterServer(s, &server{count: make(map[string]int)})
 	// 启动服务
 	err = s.Serve(l)
 	if err != nil {
