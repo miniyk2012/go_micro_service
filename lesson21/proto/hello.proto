@@ -9,20 +9,20 @@ import "google/api/annotations.proto";
 
 // 定义服务
 service Greeter {
-    // 定义方法
-    rpc SayHello (HelloRequest)returns (HelloResponse){
-      option (google.api.http) = {
-        post: "/v1/example/echo"
-        body: "*"
-      };
-    }
+  // 定义方法
+  rpc SayHello (HelloRequest)returns (HelloResponse){
+    option (google.api.http) = {
+      post: "/v1/example/echo"
+      body: "*"
+    };
+  }
 }
 
 // 定义的消息
 message HelloRequest{
-    string name = 1;  // 字段序号
+  string name = 1;  // 字段序号
 }
 
 message HelloResponse{
-    string reply = 1; 
+  string reply = 1;
 }

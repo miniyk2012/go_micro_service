@@ -9,6 +9,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 var name = flag.String("name", "miniyk", "通过-name告诉server你是谁")
@@ -17,7 +18,7 @@ func main() {
 	flag.Parse() // 解析命令行参数
 
 	// 连接server
-	conn, err := grpc.Dial("127.0.0.1:8080", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient("127.0.0.1:8080", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("grpc.Dial failed,err:%v", err)
 		return
@@ -35,5 +36,6 @@ func main() {
 		log.Printf("first c.SayHello failed, err:%v", err)
 		return
 	}
-	log.Printf("c.SayHello success, resp:%v", resp)
+	s, _ := protojson.Marshal(resp)
+	log.Printf("c.SayHello success, resp:%s", s)
 }
