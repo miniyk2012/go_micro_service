@@ -60,7 +60,7 @@ func main() {
 	// 注册服务
 	proto.RegisterGreeterServer(s, &server{count: make(map[string]int)})
 	// 新增：注册反射 API（关键步骤）
-	reflection.Register(s) // 让服务支持反射
+	reflection.Register(s) // 让服务支持反射, 供postman来使用
 	// 启动服务
 	err = s.Serve(l)
 	if err != nil {
