@@ -13,7 +13,7 @@ import (
 
 func main() {
 	// 连接server
-	conn, err := grpc.NewClient("dns:///localhost:8972", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient("dns:///localhost:8090", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("grpc.Dial failed,err:%v", err)
 		return
@@ -28,4 +28,22 @@ func main() {
 		return
 	}
 	log.Printf("shelves:%s", protojson.Format(shelves))
+
+	var pageToken string
+	for {
+		books, err := c.ListBooks(context.Background(), &pb.ListBooksRequest{
+			ShelfId:   2,
+			PageToken: pageToken,
+		})
+		if err != nil {
+			log.Fatalf("c.ListBooks failed,err:%v", err)
+			return
+		}
+		log.Printf("books:%s", protojson.Format(books))
+		if books.NextPageToken != "" {
+			pageToken = books.NextPageToken
+		} else {
+			break
+		}
+	}
 }

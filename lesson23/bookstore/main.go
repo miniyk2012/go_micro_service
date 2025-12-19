@@ -4,11 +4,15 @@ import (
 	"context"
 	"fmt"
 	"lesson23/bookstore/pb"
+	"log"
 	"net"
 	"net/http"
+	"strings"
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
@@ -27,7 +31,7 @@ func main() {
 		bs: &bookstore{db: db},
 	}
 	// 启动gRPC服务
-	l, err := net.Listen("tcp", ":8972")
+	l, err := net.Listen("tcp", ":8090")
 	if err != nil {
 		fmt.Printf("failed to listen, err:%v\n", err)
 		return
@@ -50,26 +54,38 @@ func main() {
 		fmt.Println(s.Serve(l))
 	}()
 
-	// grpc-Gateway
-	conn, err := grpc.NewClient(
-		"127.0.0.1:8972",
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
-	if err != nil {
-		fmt.Printf("grpc conn failed, err:%v\n", err)
+	// 同一个端口分别处理gRPC和HTTP
+	// 1. 创建gRPC-Gateway mux
+	gwmux := runtime.NewServeMux()
+	dops := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	if err := pb.RegisterBookstoreHandlerFromEndpoint(
+		context.Background(), gwmux, "127.0.0.1:8090", dops); err != nil {
+		log.Fatalf("RegisterBookstoreHandlerFromEndpoint failed, err:%v\n", err)
 		return
 	}
 
-	gwmux := runtime.NewServeMux()
-	pb.RegisterBookstoreHandler(context.Background(), gwmux, conn)
+	// 2. 新建HTTP mux
+	mux := http.NewServeMux()
+	mux.Handle("/", gwmux)
 
+	// 3. 定义HTTP Server
 	gwServer := &http.Server{
-		Addr:    ":8090",
-		Handler: gwmux,
+		Addr:    "127.0.0.1:8090",
+		Handler: grpcHandlerFunc(s, mux),
 	}
-	fmt.Println("grpc-Gateway serve on :8090...")
-	err = gwServer.ListenAndServe()
-	if err != nil {
-		panic(err)
-	}
+
+	// 4. 启动服务
+	fmt.Println("serving on 127.0.0.1:8090...")
+	gwServer.Serve(l)
+}
+
+// grpcHandlerFunc 将gRPC请求和HTTP请求分别调用不同的handler处理
+func grpcHandlerFunc(grpcServer *grpc.Server, otherHandler http.Handler) http.Handler {
+	return h2c.NewHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
+			grpcServer.ServeHTTP(w, r)
+		} else {
+			otherHandler.ServeHTTP(w, r)
+		}
+	}), &http2.Server{})
 }
