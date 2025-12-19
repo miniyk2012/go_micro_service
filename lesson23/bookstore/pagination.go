@@ -24,7 +24,7 @@ func (p Page) Encode() Token {
 }
 
 func (p Page) InValid() bool {
-	return p.NextID <= 0 || p.NextTimeAtUTC == 0 || p.NextTimeAtUTC > time.Now().Unix() || p.PageSize <= 0
+	return p.NextID <= 0 || time.Now().Unix()-p.NextTimeAtUTC > int64(time.Hour)*24 || p.NextTimeAtUTC > time.Now().Unix() || p.PageSize <= 0
 }
 
 type Token string

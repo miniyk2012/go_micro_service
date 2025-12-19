@@ -1,4 +1,4 @@
-.PHONY: gen
+.PHONY: gen server client
 
 
 PROTO_DIR=pb
@@ -11,3 +11,10 @@ gen:
 	--grpc-gateway_out=$(PROTO_DIR) --grpc-gateway_opt=paths=source_relative \
 	$(PROTO_DIR)/bookstore.proto
 
+
+server:
+	go run $$(ls *.go | grep -v '_test.go')
+
+
+client:
+	go run client/main.go
