@@ -1,48 +1,53 @@
-package client
+package main
 
 import (
-	"context"
-	"fmt"
-	"log"
-	"time"
-
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-
-	pb "lesson28/pb"
+	"google.golang.org/grpc/resolver"
 )
 
-func main() {
-	// 指定连接server
-	//conn, err := grpc.NewClient("127.0.0.1:8972",
-	//	grpc.WithTransportCredentials(insecure.NewCredentials()),
-	//)
+// 自定义name resolver
 
-	// dns解析
-	conn, err := grpc.NewClient("dns:///localhost:8972",
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
+const (
+	myScheme   = "yk"
+	myEndpoint = "resolver.yangkai.com"
+)
 
-	// 自定义解析
-	//conn, err := grpc.NewClient("q1mi:///resolver.yangkai.com",
-	//	grpc.WithTransportCredentials(insecure.NewCredentials()),
-	//	//grpc.WithResolvers(&q1miResolverBuilder{}),
-	//)
-	if err != nil {
-		log.Fatalf("grpc.Dial failed,err:%v", err)
-		return
+var addrs = []string{"127.0.0.1:8972", "127.0.0.1:8973", "127.0.0.1:8974"}
+
+// q1miResolver 自定义name resolver，实现Resolver接口
+type q1miResolver struct {
+	target     resolver.Target
+	cc         resolver.ClientConn
+	addrsStore map[string][]string
+}
+
+func (r *q1miResolver) ResolveNow(o resolver.ResolveNowOptions) {
+	addrStrs := r.addrsStore[r.target.Endpoint()]
+	addrList := make([]resolver.Address, len(addrStrs))
+	for i, s := range addrStrs {
+		addrList[i] = resolver.Address{Addr: s}
 	}
-	defer conn.Close()
-	c := pb.NewGreeterClient(conn)
-	for i := 0; i < 10; i++ {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-		defer cancel()
-		resp, err := c.SayHello(ctx, &pb.HelloRequest{Name: "yk"})
-		if err != nil {
-			fmt.Printf("c.SayHello failed, err:%v\n", err)
-			return
-		}
-		// 拿到了RPC响应
-		fmt.Printf("resp:%v\n", resp.GetReply())
+	r.cc.UpdateState(resolver.State{Addresses: addrList})
+}
+
+func (*q1miResolver) Close() {}
+
+// ykResolverBuilder 需实现 Builder 接口
+type ykResolverBuilder struct{}
+
+func (*ykResolverBuilder) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOptions) (resolver.Resolver, error) {
+	r := &q1miResolver{
+		target: target,
+		cc:     cc,
+		addrsStore: map[string][]string{
+			myEndpoint: addrs,
+		},
 	}
+	r.ResolveNow(resolver.ResolveNowOptions{})
+	return r, nil
+}
+func (*ykResolverBuilder) Scheme() string { return myScheme }
+
+func init() {
+	// 注册 ykResolverBuilder
+	resolver.Register(&ykResolverBuilder{})
 }

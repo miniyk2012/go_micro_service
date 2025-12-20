@@ -1,4 +1,4 @@
-.PHONY: gen server client start stop status restart
+.PHONY: gen server client start stop status restart clean
 
 PROTO_DIR=pb
 
@@ -9,28 +9,38 @@ gen:
 	--go-grpc_opt=paths=source_relative \
 	$(PROTO_DIR)/hello.proto
 
-server:
-	go run server/main.go -port=8972
-	go run server/main.go -port=8973
-	go run server/main.go -port=8974
-
 client:
 	go run client/*.go
 
+
+
 # 启动所有服务器
 start:
-	nohup go run server/main.go -port=8972 > server1.log 2>&1 & echo $$! > server1.pid
-	nohup go run server/main.go -port=8973 > server2.log 2>&1 & echo $$! > server2.pid
-	nohup go run server/main.go -port=8974 > server3.log 2>&1 & echo $$! > server3.pid
+	mkdir -p bin
+	go build -o bin/server server/main.go
+	nohup ./bin/server -port=8972 > server1.log 2>&1 & echo $$! > server1.pid
+	nohup ./bin/server -port=8973 > server2.log 2>&1 & echo $$! > server2.pid
+	nohup ./bin/server -port=8974 > server3.log 2>&1 & echo $$! > server3.pid
 	@echo "Servers started. PIDs saved to server{1,2,3}.pid"
 
 # 停止所有服务器
 stop:
-	@kill `cat server1.pid` 2>/dev/null || true
-	@kill `cat server2.pid` 2>/dev/null || true
-	@kill `cat server3.pid` 2>/dev/null || true
-	@rm -f server*.pid
-	@echo "Servers stopped."
+	@if [ -f server1.pid ]; then \
+		kill `cat server1.pid` 2>/dev/null || true; \
+		rm -f server1.pid; \
+		echo "Server 1 stopped"; \
+	fi
+	@if [ -f server2.pid ]; then \
+		kill `cat server2.pid` 2>/dev/null || true; \
+		rm -f server2.pid; \
+		echo "Server 2 stopped"; \
+	fi
+	@if [ -f server3.pid ]; then \
+		kill `cat server3.pid` 2>/dev/null || true; \
+		rm -f server3.pid; \
+		echo "Server 3 stopped"; \
+	fi
+	@echo "All servers stopped."
 
 # 查看服务器状态
 status:
@@ -40,3 +50,9 @@ status:
 
 # 重启所有服务器
 restart: stop start
+
+# 清理编译产物
+clean:
+	rm -rf bin/
+	rm -f *.pid
+	rm -f *.log
