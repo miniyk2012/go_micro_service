@@ -24,9 +24,10 @@ func main() {
 	//)
 
 	// 自定义解析
-	conn, err := grpc.NewClient("q1mi:///resolver.yangkai.com",
+	conn, err := grpc.NewClient("yk:///resolver.yangkai.com",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		//grpc.WithResolvers(&ykResolverBuilder{}),
+		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`), // 这里设置初始策略
 	)
 	if err != nil {
 		log.Fatalf("grpc.Dial failed,err:%v", err)
