@@ -1,4 +1,4 @@
-.PHONY: gen client start stop status restart clean
+.PHONY: gen server client start stop status restart clean
 
 PROTO_DIR=pb
 
@@ -9,15 +9,10 @@ gen:
 	--go-grpc_opt=paths=source_relative \
 	$(PROTO_DIR)/hello.proto
 
-client:
-	go run client/*.go
-
-
-
 # 启动所有服务器
 start:
 	mkdir -p bin
-	go build -o bin/server server/main.go
+	go build -o bin/server server/*.go
 	nohup ./bin/server -port=8972 > server1.log 2>&1 & echo $$! > server1.pid
 	nohup ./bin/server -port=8973 > server2.log 2>&1 & echo $$! > server2.pid
 	nohup ./bin/server -port=8974 > server3.log 2>&1 & echo $$! > server3.pid
@@ -56,3 +51,4 @@ clean:
 	rm -rf bin/
 	rm -f *.pid
 	rm -f *.log
+
