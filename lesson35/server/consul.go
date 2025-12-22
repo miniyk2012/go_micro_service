@@ -33,8 +33,8 @@ func (c *consul) RegisterService(serviceName string, ip string, port int) error 
 		Check: &api.AgentServiceCheck{
 			GRPC:                           fmt.Sprintf("%s:%d", ip, port), // 外网地址
 			Timeout:                        "5s",
-			Interval:                       "5s",  // 间隔
-			DeregisterCriticalServiceAfter: "10s", // 10秒钟后注销掉不健康的服务节点
+			Interval:                       "5s", // 间隔
+			DeregisterCriticalServiceAfter: "5m", // 5m后注销掉不健康的服务节点
 		},
 	}
 	return c.client.Agent().ServiceRegister(srv)

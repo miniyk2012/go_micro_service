@@ -9,6 +9,9 @@ gen:
 	--go-grpc_opt=paths=source_relative \
 	$(PROTO_DIR)/hello.proto
 
+client:
+	go run client/main.go
+
 # 启动所有服务器
 start:
 	mkdir -p bin
