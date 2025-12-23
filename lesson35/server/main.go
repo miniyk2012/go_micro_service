@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"lesson35/pb"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
@@ -61,9 +64,22 @@ func main() {
 		fmt.Printf("RegisterService failed, err:%v\n", err)
 		return
 	}
-	err = s.Serve(l)
+	go func() {
+		err = s.Serve(l)
+		if err != nil {
+			fmt.Printf("failed to serve, err:%v\n", err)
+			return
+		}
+	}()
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	fmt.Printf("wait to stop\n")
+	<-quit
+	s.GracefulStop()
+	fmt.Printf("server_id=%s stop\n", fmt.Sprintf("%s:%d", ipinfo.String(), *port))
+	err = consul.Deregister(serviceName, ipinfo.String(), *port)
 	if err != nil {
-		fmt.Printf("failed to serve, err:%v\n", err)
+		fmt.Printf("Deregister failed, err:%v\n", err)
 		return
 	}
 }

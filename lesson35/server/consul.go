@@ -40,6 +40,12 @@ func (c *consul) RegisterService(serviceName string, ip string, port int) error 
 	return c.client.Agent().ServiceRegister(srv)
 }
 
+func (c *consul) Deregister(serviceName string, ip string, port int) error {
+	return c.client.Agent().ServiceDeregister(
+		fmt.Sprintf("%s-%s-%d", serviceName, ip, port), // 服务唯一ID, 每个实例一个ID
+	)
+}
+
 // GetOutboundIP 获取本机的出口IP
 func GetOutboundIP() (net.IP, error) {
 	conn, err := net.Dial("udp", "8.8.8.8:80")
